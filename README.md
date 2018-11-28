@@ -21,7 +21,22 @@ opbtest relies on [opbasm and opbsim](https://kevinpt.github.io/opbasm) to compi
 Both executables should be in your `$PATH`. 
 The simulator will behave different compared to the actual hardware, so be aware that a set of green tests will not guarantee your code to work when deployed. 
 
+### Installation
+
+Use pip: `pip install opbtest`
+
+Prerequirements: 
+
+1. Python 3.x. Tested and written in Python 3.6
+2. The command `opbsam` should be installed. (See above)
+3. The command `opbsim` should be installed. (See above)
+
+
 ### API Documentation
+
+Start by subclassing from `OpbTestCase` instead of unittest's usual `TestCase`
+(you can still use all methods defined here, it's subclassed too.) Your IDE should recognize methods starting with `test_` as a unit test. 
+For more information, consult the [Python 3 unittest framework documentation](https://docs.python.org/3/library/unittest.html).
 
 #### Loading your Assembly
 
