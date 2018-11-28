@@ -3,6 +3,7 @@ class OpbTestMockable():
         self.case = case
         self.filename = filename
         self.prepender = []
+        self.replacers = {}
         self.inputs = {}
         self.proctotest = ""
         self.appender = ["\nopbtestquitfn: output sD, FF\n"]
@@ -17,6 +18,13 @@ class OpbTestMockable():
         for key, val in regmap.items():
             self.prepender.append("load " + key + ", " + str(val) + "\n")
         return self
+
+    def replace(self, statement1, statement2):
+        self.replacers[statement1] = statement2
+        return self
+
+    def mockproc(self, procname):
+        return self.replace("call " + procname, "load s0, s0")
 
     def mockinput(self, port, value):
         self.inputs[port] = value
@@ -62,10 +70,24 @@ class OpbTestMockable():
                     newdata.append(line)
             return newdata
 
+        def setupreplaces(data):
+            newdata = []
+            for line in data:
+                found = False
+                for key, value in self.replacers.items():
+                    if line.upper().replace(" ", "").startswith(key.upper().replace(" ", "")):
+                        newdata.append(value)
+                        found = True
+                if found is False:
+                    newdata.append(line)
+            return newdata
+
         if len(self.proctotest) > 0:
             data = setupproc(data)
         if len(self.inputs) > 0:
             data = setupinputs(data)
+        if len(self.replacers) > 0:
+            data = setupreplaces(data)
 
         firstjump = findlinebetween(data, "jump", "jump")
 

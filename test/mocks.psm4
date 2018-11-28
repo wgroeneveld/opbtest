@@ -1,0 +1,9 @@
+jump main
+
+proc myproc(s1 is bla) {
+    load s0, 11
+}
+
+main:
+    call myproc
+    output sD, FF
