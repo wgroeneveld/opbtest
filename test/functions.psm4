@@ -1,0 +1,26 @@
+use_stack(sF, 0x3F)
+
+jump main
+
+proc proc1(s0 is result := 1) {
+    load result, 42
+    call proc2
+}
+
+proc proc2(s4 is test) {
+    load test, 42
+}
+
+proc proc3(s5 is bla) {
+    add bla, 1
+}
+
+func func1(s1 is val) : 1 {
+    load val, 52
+}
+
+main:
+    load s2, 11
+    add s2, 1
+
+    output sD, FF
