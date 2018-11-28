@@ -22,17 +22,17 @@ class TestFunctions(OpbTestCase):
             pass
 
     def test_proc3_adds_to_existing_register(self):
-        result = self.load_file("functions.psm4").testproc("proc3").setregs({"s5": 2}).execute()
-        self.assertPsm(result).reg("s5").contains(3)
+        assert_that = self.load_file("functions.psm4").testproc("proc3").setregs({"s5": 2}).execute()
+        assert_that.reg("s5").contains(3)
 
     def test_proc2_testproc_does_not_execute_rest_of_psm(self):
-        result = self.load_file("functions.psm4").testproc("proc2").execute()
-        self.assertPsm(result).regs(["s2", "s4"]).contains([0, 42])
+        assert_that = self.load_file("functions.psm4").testproc("proc2").execute()
+        assert_that.regs(["s2", "s4"]).contains([0, 42])
 
     def test_proc1_calls_proc2(self):
-        result = self.load_file("functions.psm4").testproc("proc1").execute()
-        self.assertPsm(result).regs(["s0", "s4"]).contains([42, 42])
+        assert_that = self.load_file("functions.psm4").testproc("proc1").execute()
+        assert_that.regs(["s0", "s4"]).contains([42, 42])
 
     def test_func1_calls_func1(self):
-        result = self.load_file("functions.psm4").testfunc("func1").execute()
-        self.assertPsm(result).reg("s1").contains(52)
+        assert_that = self.load_file("functions.psm4").testfunc("func1").execute()
+        assert_that.reg("s1").contains(52)

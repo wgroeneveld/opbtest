@@ -75,7 +75,7 @@ class OpbTestCase(TestCase):
 
         json_out = json.loads(json_out)
         self.assertTrue(json_out['termination'] == 'termNormal', 'Simulation failed with ' + json_out['termination'])
-        return json_out
+        return self.assertPsm(json_out)
 
     def execute_psm(self, psm):
         with open("tmp_" + str(time.time()) + ".psm4", "w") as file:
@@ -84,6 +84,15 @@ class OpbTestCase(TestCase):
 
     def assertPsm(self, jsondata):
         return OpbTestAssertions(jsondata, self)
+
+    def _check(self, jsonindex, jsondata, index, expected):
+        actual = jsondata[jsonindex][index]
+        if expected == actual:
+            return ""
+        return "output " + jsonindex + " " + str(index) + " should contain " + str(expected) + " but instead contains " + str(actual)
+
+    def checkPort(self, jsondata, port, expected):
+        self._check("ports_out", jsondata, port, expected)
 
     def checkReg(self, jsondata, bank, nr, expected):
         actual = jsondata["regs_" + bank][nr]
