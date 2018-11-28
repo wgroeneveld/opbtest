@@ -39,9 +39,10 @@ class OpbTestBaseAssertions():
 
 
 class OpbTestRegAssertions(OpbTestBaseAssertions):
-    def __init__(self, json, case):
+    def __init__(self, json, case, bank):
         super().__init__(json, case)
         self.registers = None
+        self.bank = bank
 
     def torawregistername(self, register):
         return int(register[1], 16)
@@ -66,14 +67,14 @@ class OpbTestRegAssertions(OpbTestBaseAssertions):
 
     def _tocontain(self, expected):
         for register in self.registers:
-            result = self.case.checkReg(self.jsondata, "a", register, expected)
+            result = self.case.checkReg(self.jsondata, self.bank, register, expected)
             if result != "":
                 self.case.fail(result)
 
     def _contains(self, expected):
         results = []
         for i in range(0, len(expected)):
-            result = self.case.checkReg(self.jsondata, "a", self.registers[i], expected[i])
+            result = self.case.checkReg(self.jsondata, self.bank, self.registers[i], expected[i])
             if result != "":
                 results.append(result)
         return results
@@ -164,7 +165,19 @@ class OpbTestAssertions():
         return OpbTestScratchAssertions(self.jsondata, self.case).scratchpads(indices)
 
     def regs(self, registers):
-        return OpbTestRegAssertions(self.jsondata, self.case).regs(registers)
+        return OpbTestRegAssertions(self.jsondata, self.case, "a").regs(registers)
 
     def reg(self, register):
-        return OpbTestRegAssertions(self.jsondata, self.case).reg(register)
+        return OpbTestRegAssertions(self.jsondata, self.case, "a").reg(register)
+
+    def regsa(self, registers):
+        return OpbTestRegAssertions(self.jsondata, self.case, "a").regs(registers)
+
+    def rega(self, register):
+        return OpbTestRegAssertions(self.jsondata, self.case, "a").reg(register)
+
+    def regsb(self, registers):
+        return OpbTestRegAssertions(self.jsondata, self.case, "b").regs(registers)
+
+    def regb(self, register):
+        return OpbTestRegAssertions(self.jsondata, self.case, "b").reg(register)
