@@ -11,7 +11,7 @@ from opbtest import OpbTestCase
 
 class MyTestCase(OpbTestCase):
     def test_my_cool_procedure_should_set_some_register(self):
-        assert_that = self.load_file("functions.psm4").testproc("my_cool_procedure").setregs({"s5": 2}).execute()
+        assert_that = self.load_file("functions.psm4").testproc("my_cool_procedure").execute()
         assert_that.reg("s5").contains(3)
 ````
 
@@ -132,3 +132,14 @@ If you explicitly do **not** want a certain procedure to be called, you can do s
 This will replace all `call procname` statements with dummy statements, hence never actually executing the procedure. 
 
 You can replace your own statements with `replace(statement_to_replace, statement_to_replace_with)`. 
+
+#### Injecting register values
+
+Before calling `execute()`, you can preload register values using `setreg()`. 
+For instance, `.setregs({"s5": 2, "s6": 3})` will preload register s5 with value 2 and register s6 with value 3. Psm statements like `output s5, 0` will load 2 into output port 0, because register s5 is preloaded.
+
+#### Injecting input values
+
+Before calling `execute()`, you can preload input port values using `mockinput()`.
+For instance, `.mockinput(0, 4)` will preload input port 0 with value 4. Psm statements like `input s0, 0` will load 4 into register s4. 
+opbtest acutally replaces the statement with `load s0, 4`, so no actual input statements will be processed.
