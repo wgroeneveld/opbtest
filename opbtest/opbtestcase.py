@@ -1,110 +1,12 @@
+import glob
+import json
+import os
+import subprocess
+import time
 from unittest import TestCase
-import subprocess, os, time, json, glob, functools
 
-
-class OpbTestAssertions():
-    def __init__(self, json, case):
-        self.jsondata = json
-        self.case = case
-        self.registers = None
-
-    def regs(self, registers):
-        if type(registers) is not list:
-            self.case.fail("Expected a list of registers")
-        self.registers = list(map(lambda reg: self.torawregistername(reg), registers))
-        return self
-
-    def torawregistername(self, register):
-        return int(register[1], 16)
-
-    def assertregistername(self, register):
-        if not register.startswith("s"):
-            self.case.fail("Register name should start with 's', followed with 0-F")
-
-    def reg(self, register):
-        self.assertregistername(register)
-        self.registers = [int(register[1], 16)]
-        return self
-
-    def tocontain(self, expected):
-        for register in self.registers:
-            result = self.case.checkReg(self.jsondata, "a", register, expected)
-            if result != "":
-                self.case.fail(result)
-
-    def contains(self, expected):
-        if self.registers is None:
-            self.case.fail("First call reg()/regs() to assert which register to check!")
-
-        if type(expected) is int:
-            return self.tocontain(expected)
-
-        if type(expected) is not list:
-            self.case.fail("Expected array as expected register values!")
-        if len(expected) != len(self.registers):
-            self.case.fail("Given registers and expected results arrays do not match!")
-
-        results = []
-        for i in range(0, len(expected)):
-            result = self.case.checkReg(self.jsondata, "a", self.registers[i], expected[i])
-            if result != "":
-                results.append(result)
-        if len(results) > 0:
-            self.case.fail(
-                "Registers do not contain expected values: \n" + functools.reduce(lambda a, b: a + "\n" + b, results))
-
-
-class OpbTestMockable():
-    def __init__(self, case, filename):
-        self.case = case
-        self.filename = filename
-        self.prepender = []
-        self.proctotest = ""
-        self.appender = ["\nopbtestquitfn: output sD, FF\n"]
-
-    def testproc(self, procname):
-        self.proctotest = procname
-        return self
-
-    def setregs(self, regmap):
-        for key, val in regmap.items():
-            self.prepender.append("load " + key + ", " + str(val) + "\n")
-        return self
-
-    def execute(self):
-        with open(self.filename, 'r') as original:
-            data = original.readlines()
-
-        def findlinebetween(data, statement1, statement2):
-            linenr = 0
-            startcounting = False
-            for line in data:
-                if statement1 in line:
-                    startcounting = True
-                if startcounting and statement2 in line:
-                    break
-                linenr += 1
-
-            if linenr + 1 == len(data):
-                self.case.fail("No statements between " + statement1 + " and " + statement2 + " found")
-            return linenr
-
-        def setupproc(data):
-            self.prepender.append("jump " + self.proctotest + "\n")
-
-            linenr = findlinebetween(data, "proc " + self.proctotest, "}")
-            data = data[0:linenr] + ["jump opbtestquitfn\n"] + data[linenr:]
-            return data
-
-        if len(self.proctotest) > 0:
-            data = setupproc(data)
-
-        firstjump = findlinebetween(data, "jump", "jump")
-
-        data = data[0:firstjump] + self.prepender + data[firstjump:] + self.appender
-        with open(self.filename, 'w') as modified:
-            modified.writelines(data)
-        return self.case.execute_file(self.filename)
+from opbtest.opbtestassertions import OpbTestAssertions
+from opbtest.opbtestmockable import OpbTestMockable
 
 
 class OpbTestCase(TestCase):
@@ -185,7 +87,8 @@ class OpbTestCase(TestCase):
 
     def checkReg(self, jsondata, bank, nr, expected):
         actual = jsondata["regs_" + bank][nr]
-        if int(str(expected), 16) == actual:
+        if type(expected) is int:
+            expected = int(str(expected), 16)
+        if expected == actual:
             return ""
-        return "reg " + bank + "," + str(nr) + " should contain " + str(expected) + " but instead contains " + str(
-            actual)
+        return "reg " + bank + "," + str(nr) + " should contain " + str(expected) + " but instead contains " + str(actual)
