@@ -21,6 +21,10 @@ class TestFunctions(OpbTestCase):
         except AssertionError:
             pass
 
+    def test_proc_with_tab_statements_replaced_well(self):
+        assert_that = self.load_file("functions.psm4").testproc("proc3").replace("add bla, 1", "add bla, 2").execute()
+        assert_that.reg("s5").contains(2)
+
     def test_proc3_adds_to_existing_register(self):
         assert_that = self.load_file("functions.psm4").testproc("proc3").setregs({"s5": 2}).execute()
         assert_that.reg("s5").contains(3)
