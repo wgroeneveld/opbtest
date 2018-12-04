@@ -91,6 +91,15 @@ Everything can be chained together, or be asserted in one line:
 Notice the difference: `scratchpads()` will accept an array, and `contains()` will accept the same length in values.
 You can set the scratchpad/output port/... index as an `int` (0, 1, ...) or as a `str` in hex values ("0", "1F", "FF", ...)
 
+**Assertion output**: if for instance the output ports do not match, the following message will appear in your test output window:
+
+> AssertionError: Output dos not contain expected values: 
+output ports_out 3 should contain 0 (hex: 00) but instead contains 12 (hex: 0C)
+
+Since it's possible to assert hex values (as a `str`) or number values (as an `int`), the test output message always shows both. 
+
+It is possible to write `assert_that.ports([1]).contains(["0A"])` and `assert_that.ports([1]).contains([10])`. Both assert the same thing and contain the same expectation values.
+
 #### Testing only one procedure
 
 If you don't want the whole thing to be executed, you can still use opbtest, and call `testproc(name)`:
@@ -143,3 +152,4 @@ For instance, `.setregs({"s5": 2, "s6": 3})` will preload register s5 with value
 Before calling `execute()`, you can preload input port values using `mockinput()`.
 For instance, `.mockinput(0, 4)` will preload input port 0 with value 4. Psm statements like `input s0, 0` will load 4 into register s4. 
 opbtest acutally replaces the statement with `load s0, 4`, so no actual input statements will be processed.
+

@@ -85,11 +85,18 @@ class OpbTestCase(TestCase):
     def assertPsm(self, jsondata):
         return OpbTestAssertions(jsondata, self)
 
+    def _print_expectation(self, expected):
+        return str(expected) + " (hex: " + hex(expected).replace("0x", "").upper().zfill(2) + ")"
+
     def _check(self, jsonindex, jsondata, index, expected):
         actual = jsondata[jsonindex][index]
+        # try to convert both to the same type. acutal will always be an int (hex valued)
+        if type(expected) is str:
+            expected = int(expected, 16)
+
         if expected == actual:
             return ""
-        return "output " + jsonindex + " " + str(index) + " should contain " + str(expected) + " but instead contains " + str(actual)
+        return "output " + jsonindex + " " + str(index) + " should contain " + self._print_expectation(expected) + " but instead contains " + self._print_expectation(actual)
 
     def checkPort(self, jsondata, port, expected):
         self._check("ports_out", jsondata, port, expected)
@@ -100,4 +107,4 @@ class OpbTestCase(TestCase):
             expected = int(str(expected), 16)
         if expected == actual:
             return ""
-        return "reg " + bank + "," + str(nr) + " should contain " + str(expected) + " but instead contains " + str(actual)
+        return "reg " + bank + "," + self._print_expectation(nr) + " should contain " + str(expected) + " but instead contains " + str(actual)

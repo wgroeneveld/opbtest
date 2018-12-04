@@ -34,7 +34,7 @@ class OpbTestMockable():
         with open(self.filename, 'r') as original:
             data = original.readlines()
 
-        def findlinebetween(data, statement1, statement2):
+        def find_line_between(data, statement1, statement2):
             linenr = 0
             startcounting = False
             for line in data:
@@ -47,11 +47,33 @@ class OpbTestMockable():
             if linenr + 1 == len(data):
                 self.case.fail("No statements between " + statement1 + " and " + statement2 + " found")
             return linenr
+        def find_last_closing_bracket(data, procname):
+            procname += "(" # add (, could also have been a call
+
+            linenr = 0
+            startcounting = False
+            amount_of_brackets_open = 0
+            for line in data:
+                if procname in line:
+                    startcounting = True
+
+                if startcounting:
+                    if '}' in line:
+                        amount_of_brackets_open -= 1
+                    elif '{' in line:
+                        amount_of_brackets_open += 1
+                    if amount_of_brackets_open == 0:
+                        break
+                linenr += 1
+
+            if linenr + 1 == len(data):
+                self.case.fail("Proc " + procname + ": no ending bracket } found")
+            return linenr
 
         def setupproc(data):
             self.prepender.append("jump " + self.proctotest + "\n")
 
-            linenr = findlinebetween(data, self.proctotest + "(", "}")          # add (, could also have been a call
+            linenr = find_last_closing_bracket(data, self.proctotest)
             data = data[0:linenr] + ["jump opbtestquitfn\n"] + data[linenr:]
             return data
 
@@ -89,7 +111,7 @@ class OpbTestMockable():
         if len(self.replacers) > 0:
             data = setupreplaces(data)
 
-        firstjump = findlinebetween(data, "jump", "jump")
+        firstjump = find_line_between(data, "jump", "jump")
 
         data = data[0:firstjump] + self.prepender + data[firstjump:] + self.appender
         with open(self.filename, 'w') as modified:

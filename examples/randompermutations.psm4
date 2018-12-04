@@ -1,0 +1,154 @@
+constant QuitPort, FF
+constant ConfigA, 01
+constant ConfigB, 02
+constant ConfigC, 03
+constant ConfigD, 04
+
+namereg sF, SP  	; sF is stack pointer
+namereg sA, seed
+
+init:
+	load SP, 00		; 3F = einde.
+	jump main
+
+	use_random8(random, seed)
+
+proc random_range(s0 is max, s2 is shifter, s3 is counter) {
+	if(s0 == 0) {
+		load seed, 0
+		jump done
+	}
+randomizing:
+	load counter, 0
+	load shifter, max
+	call random
+shifting:
+	; shift totdat we een 1 tegenkomen (wordt ook nog geshift)
+	add counter, 1
+	sl0 shifter
+	jump NC, shifting
+	sub counter, 1
+
+	; shift gegenereerd getal zelfde aantal keren, indien te groot: herbegin
+	for(shifter := 0, shifter < counter, shifter := shifter + 1) {
+		sl0 seed
+	}
+	for(shifter := 0, shifter < counter, shifter := shifter + 1) {
+		sr0 seed
+	}
+
+	if(seed > max) {
+		jump randomizing
+	}
+
+done:
+	; resultaat - links geshift met 0en (en terug rechts) - zit in seed
+}
+
+proc permutation_to_configuration(s4 is index, s5 is scratchindex, s6 is counter, s7 is configa, s8 is configb) {
+	load configa, 0
+	load configb, 0
+
+	for(counter := 3, signed(counter >= 0), counter := counter - 1) {
+		load SP, counter
+		expr(SP := SP + scratchindex)
+		fetch index, (SP)
+
+		; 0000 00 weg; laatse 2 bits relevant tot nu toe
+		sl0 index
+		sl0 index
+		sl0 index
+		sl0 index
+		sl0 index
+		sl0 index
+
+		sl0 index
+		sla configa
+
+		sl0 index
+		sla configb
+
+		add SP, 01
+	}
+}
+
+proc pg_to_permutation(s6 is counter, s7 is pgcounter, s8 is destcounter, s4 is value, s5 is pgvalue) {
+	load pgcounter, 10
+
+	for(counter := 0, counter < 4, counter := counter + 1) {
+		load SP, counter
+		fetch value, (SP)
+		load SP, pgcounter
+		fetch pgvalue, (SP)
+
+		expr(destcounter := value + 32)
+		load SP, destcounter
+		store pgvalue, (SP)
+
+		add pgcounter, 01
+	}
+}
+
+main:
+	load seed, 5A	; replace with LFSA hw lookup
+
+	vars(s0 is random_range_max, s6 is counter, s4 is index, s5 is random_index)
+
+	; initiele array: [0, 1, 2] in scratchpad 00 -> 03
+	for(counter := 0, counter < 4, counter := counter + 1) {
+		store counter, (SP)
+		add SP, 01
+	}
+	load SP, 10
+	; initiele p/g: [0, 2, 2, 1] in scratchpad 10 -> 13 (hex)
+	load counter, 0
+	store counter, (SP)
+	add SP, 01
+	load counter, 2
+	store counter, (SP)
+	add SP, 01
+	load counter, 2
+	store counter, (SP)
+	add SP, 01
+	load counter, 1
+	store counter, (SP)
+	add SP, 01
+
+	; backwards Knuth shuffle
+	for(counter := 3, signed(counter >= 0), counter := counter - 1) {
+		; 0) random index in seed
+		load random_range_max, counter
+		call random_range
+
+		; 1) fetch arr[counter] (starting at end)
+		load SP, counter
+		fetch index, (SP)
+
+		; 2) fetch arr[random(0, counter + 1)]
+		load SP, seed
+		fetch random_index, (SP)
+
+		; 3) swap values
+		store index, (SP)
+		load SP, counter
+		store random_index, (SP)
+		add SP, 01
+	}
+
+	vars(s7 is configa, s8 is configb)
+
+	load s5, 0; originele permutation resultaat leeft op scratchpad index 0
+	call permutation_to_configuration
+	output configa, ConfigA
+	output configb, ConfigB
+
+	call pg_to_permutation
+
+	load s5, 20	; p/g permutation resultaat leeft op scratchpad index 32
+	call permutation_to_configuration
+	output configa, ConfigC
+	output configb, ConfigD
+
+  	; Terminate the simulator
+  	;load s0, 00
+  	output s0, QuitPort
