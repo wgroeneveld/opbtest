@@ -97,8 +97,8 @@ class OpbTestMockable():
             for line in data:
                 found = False
                 for key, value in self.replacers.items():
-                    if line.upper().replace(" ", "").startswith(key.upper().replace(" ", "")):
-                        newdata.append(value)
+                    if line.upper().replace(" ", "").replace("\t", "").startswith(key.upper().replace(" ", "")):
+                        newdata.append(value + "\n")
                         found = True
                 if found is False:
                     newdata.append(line)

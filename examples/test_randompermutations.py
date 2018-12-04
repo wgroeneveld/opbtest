@@ -22,13 +22,14 @@ class TestRandomPermutations(OpbTestCase):
     def test_random_range_between_three_and_zero(self):
         # proc random_range(s0 is max, s2 is shifter, s3 is counter) {
         # we need to initialize these registers as "parameters". "return value" is in sA (seed)
+        # the "random 8-bit" value will be shifted until it hits a max.
         assert_that = self.load_file("randompermutations.psm4")\
-            .replace("call random", "load seed, AF")\
+            .replace("call random", "load seed, 1F")\
             .setregs({"s0": 3})\
             .testproc("random_range")\
             .execute()
 
-        assert_that.reg("sA").contains(2)
+        assert_that.reg("sA").contains(3)
 
     def test_output_configuration_correct_in_output_ports(self):
         assert_that = self.load_psm4_assertion()
