@@ -10,7 +10,7 @@ Example test case:
 from opbtest import OpbTestCase
 
 class MyTestCase(OpbTestCase):
-    def test_my_cool_procedure_should_set_some_register(self):
+    def test_add_registers_counts_reg1_and_reg2_into_reg3(self):
         assert_that = self.load_file("functions.psm4")\
             .testproc("add_registers")\
             .setregs({"s0": 1, "s1": 2})\
@@ -35,7 +35,8 @@ proc add_registers(s0 is one, s1 is two, s5 is result) {
 }
 main:
   ; this should not be executed
-  load result, 42
+  load s5, 42
+  load sD, FF
 ```
 
 That's it! Load your Assembly file, apply setup (mocks, inputs), and verify expectations.
