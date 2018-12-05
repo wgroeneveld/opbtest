@@ -11,9 +11,32 @@ from opbtest import OpbTestCase
 
 class MyTestCase(OpbTestCase):
     def test_my_cool_procedure_should_set_some_register(self):
-        assert_that = self.load_file("functions.psm4").testproc("my_cool_procedure").execute()
+        assert_that = self.load_file("functions.psm4")\
+            .testproc("add_registers")\
+            .setregs({"s0": 1, "s1": 2})\
+            .execute()
         assert_that.reg("s5").contains(3)
 ````
+
+Given the following Assembly:
+
+```
+jump main
+proc add_registers(s0 is one, s1 is two, s5 is result) {
+  load result, 0
+  loop1:
+    add result, 1
+    sub one, 1
+    jump NZ, loop1
+  loop2:
+    add result, 1
+    sub two, 1
+    jump NZ, loop2
+}
+main:
+  ; this should not be executed
+  load result, 42
+```
 
 That's it! Load your Assembly file, apply setup (mocks, inputs), and verify expectations.
 
