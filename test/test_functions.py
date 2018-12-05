@@ -21,6 +21,10 @@ class TestFunctions(OpbTestCase):
         except AssertionError:
             pass
 
+    def test_proc_with_brackets_in(self):
+        assert_that = self.load_file("functions.psm4").testproc("func_with_brackets_in").execute()
+        assert_that.regs(["s2"]).contains([3])
+
     def test_proc_with_tab_statements_replaced_well(self):
         assert_that = self.load_file("functions.psm4").testproc("proc3").replace("add bla, 1", "add bla, 2").execute()
         assert_that.reg("s5").contains(2)

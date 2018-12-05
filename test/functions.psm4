@@ -19,6 +19,15 @@ func func1(s1 is val) : 1 {
     load val, 52
 }
 
+proc func_with_brackets_in() {
+    if(s0 == 0) {
+        if(s1 == 0) {
+            load s2, 2
+        }
+    }
+    add s2, 1
+}
+
 main:
     load s2, 11
     add s2, 1

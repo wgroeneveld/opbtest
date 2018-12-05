@@ -153,3 +153,26 @@ Before calling `execute()`, you can preload input port values using `mockinput()
 For instance, `.mockinput(0, 4)` will preload input port 0 with value 4. Psm statements like `input s0, 0` will load 4 into register s4. 
 opbtest acutally replaces the statement with `load s0, 4`, so no actual input statements will be processed.
 
+### Debugging Tests
+
+Somethings, a failing test does not clearly indicate the underlying problem. The Assembly source file is not the same source code as the code that is simulated to get to this result.
+For example, when mocking, parts are replaced, and when registers are setup, extra loads are done. If you want to take a look at the Assembly file to be compiled and interpreted, add the following to your `setUp` testcase:
+
+```python
+    def setUp(self):
+        self.do_not_cleanup_files()
+```
+
+This will leave the generated Assembly files in the test directory after test execution:
+
+1. tmp_[timestamp].psm4
+2. tmp_[timestamp].gen.psm - PicoBlaze macro expanded instructionset
+3. tmp_[timestamp].fmt, .log metafiles
+4. tmp_[timestamp].mem - binary.
+
+Run the assembler yourself:
+
+1. compiling: `opbasm --6 -c file.psm4` (or `--3` for PicoBlaze 3)
+2. simulating: `opbsim -v -m:file.mem --pb6` (or `--pb3` for PicoBlaze 3)
+
+For more information about the commandline flags, see the [Open PicoBlaze Assembler documentation](http://kevinpt.github.io/opbasm/).
