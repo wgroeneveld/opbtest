@@ -179,7 +179,7 @@ opbtest acutally replaces the statement with `load s0, 4`, so no actual input st
 
 ### Debugging Tests
 
-Somethings, a failing test does not clearly indicate the underlying problem. The Assembly source file is not the same source code as the code that is simulated to get to this result.
+Sometimes, a failing test does not clearly indicate the underlying problem. The Assembly source file is not the same source code as the code that is simulated to get to this result.
 For example, when mocking, parts are replaced, and when registers are setup, extra loads are done. If you want to take a look at the Assembly file to be compiled and interpreted, add the following to your `setUp` testcase:
 
 ```python
